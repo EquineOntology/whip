@@ -53,13 +53,37 @@ class BlockingManager: ObservableObject {
     }
 
     private func checkAndEnforceTimeLimit(for event: AppUsageEvent) {
-        guard let timeLimit = timeLimitSettings?.timeLimitRules[event.appId],
-              event.secondsUsedToday >= timeLimit else {
-            return
-        }
+        guard let timeLimit = timeLimitSettings?.timeLimitRules[event.appId] else { return }
 
-        logger.info("Time limit reached for app ID: \(event.appId). Enforcing blocking.")
-        enforceBlocking(for: event.runningApp)
+        let shouldBlock = isOutsideSchedule(timeLimit.schedule) ||
+                          (timeLimit.dailyLimit != nil && event.secondsUsedToday >= timeLimit.dailyLimit!)
+
+        if shouldBlock {
+            enforceBlocking(for: event.runningApp)
+        }
+    }
+
+    private func isOutsideSchedule(_ schedule: Schedule?) -> Bool {
+        guard let schedule = schedule else { return false }
+
+        let now = Date()
+        let calendar = Calendar.current
+        let nowComponents = calendar.dateComponents([.hour, .minute], from: now)
+        let startComponents = calendar.dateComponents([.hour, .minute], from: schedule.start)
+        let endComponents = calendar.dateComponents([.hour, .minute], from: schedule.end)
+
+        // Convert all times to minutes since midnight for easier comparison
+        let nowMinutes = nowComponents.hour! * 60 + nowComponents.minute!
+        let startMinutes = startComponents.hour! * 60 + startComponents.minute!
+        let endMinutes = endComponents.hour! * 60 + endComponents.minute!
+
+        if startMinutes < endMinutes {
+            // Schedule does not cross midnight
+            return nowMinutes >= startMinutes && nowMinutes < endMinutes
+        } else {
+            // Schedule crosses midnight
+            return nowMinutes >= startMinutes || nowMinutes < endMinutes
+        }
     }
 
     private func enforceBlocking(for runningApp: NSRunningApplication) {

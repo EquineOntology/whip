@@ -41,6 +41,9 @@ class AppState: ObservableObject {
         switch persistenceManager.loadTimeLimitRules() {
         case .success(let rules):
             timeLimitSettings.updateRules(rules)
+            for (appId, rule) in rules {
+                logger.debug("Loaded rule for \(appId): daily limit = \(rule.dailyLimit ?? 0), schedule = \(rule.schedule?.debugDescription() ?? "none")")
+            }
         case .failure(let error):
             logger.error("Failed to load time limit rules: \(error.localizedDescription)")
         }
@@ -56,6 +59,10 @@ class AppState: ObservableObject {
     }
     
     private func saveTimeLimitRules() {
+        print("Saving time limit rules:")
+        for (appId, rule) in timeLimitSettings.timeLimitRules {
+            print("\(appId): \(rule.debugDescription())")
+        }
         switch persistenceManager.saveTimeLimitRules(timeLimitSettings.timeLimitRules) {
         case .success:
             logger.debug("Successfully saved time limit rules.")
