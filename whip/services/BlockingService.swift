@@ -2,9 +2,9 @@ import AppKit
 import Combine
 import OSLog
 
-class BlockingManager: ObservableObject {
-    private let logger = Logger(subsystem: "dev.fratta.whip", category: "BlockingManager")
-    private weak var timeLimitSettings: TimeLimitSettings?
+class BlockingService: ObservableObject {
+    private let logger = Logger(subsystem: "dev.fratta.whip", category: "BlockingService")
+    private weak var ruleService: RuleService?
     private weak var usageTracker: UsageTracker?
     private var cancellables = Set<AnyCancellable>()
 
@@ -18,9 +18,9 @@ class BlockingManager: ObservableObject {
         cleanupResources()
     }
 
-    func setDependencies(usageTracker: UsageTracker, timeLimitSettings: TimeLimitSettings) {
+    func setDependencies(usageTracker: UsageTracker, ruleService: RuleService) {
         self.usageTracker = usageTracker
-        self.timeLimitSettings = timeLimitSettings
+        self.ruleService = ruleService
         setupEnforcement()
         setupWorkspaceObserver()
     }
@@ -52,48 +52,21 @@ class BlockingManager: ObservableObject {
         }
     }
 
-    private func checkAndEnforceTimeLimit(for event: AppUsageEvent) {
-        guard let timeLimit = timeLimitSettings?.timeLimitRules[event.appId] else { return }
-
-        let shouldBlock = isOutsideSchedule(timeLimit.schedule) ||
-                          (timeLimit.dailyLimit != nil && event.secondsUsedToday >= timeLimit.dailyLimit!)
-
-        if shouldBlock {
-            enforceBlocking(for: event.runningApp)
-        }
-    }
-
-    private func isOutsideSchedule(_ schedule: Schedule?) -> Bool {
-        guard let schedule = schedule else { return false }
+    private func checkAndEnforceTimeLimit(for appUsage: AppUsage) {
+        guard let timeLimit = ruleService?.timeLimitRules[appUsage.appInfo.id] else { return }
 
         let now = Date()
-        let calendar = Calendar.current
-        let nowComponents = calendar.dateComponents([.hour, .minute], from: now)
-        let startComponents = calendar.dateComponents([.hour, .minute], from: schedule.start)
-        let endComponents = calendar.dateComponents([.hour, .minute], from: schedule.end)
+        let shouldBlock = timeLimit.shouldBlock(at: now, usedTime: appUsage.timeSpent)
 
-        // Convert all times to minutes since midnight for easier comparison
-        let nowMinutes = nowComponents.hour! * 60 + nowComponents.minute!
-        let startMinutes = startComponents.hour! * 60 + startComponents.minute!
-        let endMinutes = endComponents.hour! * 60 + endComponents.minute!
-
-        if startMinutes < endMinutes {
-            // Schedule does not cross midnight
-            return nowMinutes >= startMinutes && nowMinutes < endMinutes
-        } else {
-            // Schedule crosses midnight
-            return nowMinutes >= startMinutes || nowMinutes < endMinutes
+        if shouldBlock, let runningApp = appUsage.runningApp {
+            enforceBlocking(for: runningApp)
         }
     }
 
     private func enforceBlocking(for runningApp: NSRunningApplication) {
-        guard let bundleID = runningApp.bundleIdentifier else {
-            logger.warning("Failed to retrieve bundle identifier for running app.")
-            return
-        }
-
-        guard runningApp.processIdentifier != ProcessInfo.processInfo.processIdentifier else {
-            logger.warning("Attempting to block our own app, skipping")
+        guard let bundleID = runningApp.bundleIdentifier,
+              runningApp.processIdentifier != ProcessInfo.processInfo.processIdentifier else {
+            logger.warning("Invalid app for blocking")
             return
         }
 
@@ -128,18 +101,18 @@ class BlockingManager: ObservableObject {
         startPeriodicUpdates()
     }
 
-    private func updateOverlayPosition(_ overlay: OverlayWindow, to frame: NSRect) {
-        if frame != overlay.frame {
-            overlay.setFrame(frame, display: true)
-        }
-        overlay.orderFront(nil)
-    }
-
     private func startPeriodicUpdates() {
         updateTimer?.invalidate()
         updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             self?.updateOverlayPosition()
         }
+    }
+
+    private func updateOverlayPosition(_ overlay: OverlayWindow, to frame: NSRect) {
+        if frame != overlay.frame {
+            overlay.setFrame(frame, display: true)
+        }
+        overlay.orderFront(nil)
     }
 
     private func updateOverlayPosition() {
@@ -182,23 +155,18 @@ class BlockingManager: ObservableObject {
         let options: CGWindowListOption = [.excludeDesktopElements, .optionOnScreenOnly]
         let windowList = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] ?? []
 
-        for windowInfo in windowList {
-            guard let ownerPID = windowInfo[kCGWindowOwnerPID as String] as? Int32,
-                  ownerPID == app.processIdentifier,
-                  let windowNumber = windowInfo[kCGWindowNumber as String] as? Int,
-                  let bounds = windowInfo[kCGWindowBounds as String] as? [String: CGFloat] else {
-                continue
+        return windowList.first { windowInfo in
+            (windowInfo[kCGWindowOwnerPID as String] as? Int32) == app.processIdentifier
+        }.flatMap { windowInfo in
+            guard let windowNumber = windowInfo[kCGWindowNumber as String] as? Int,
+                  let bounds = windowInfo[kCGWindowBounds as String] as? [String: CGFloat],
+                  let x = bounds["X"], let y = bounds["Y"],
+                  let width = bounds["Width"], let height = bounds["Height"] else {
+                return nil
             }
-
-            let frame = NSRect(x: bounds["X"] ?? 0,
-                               y: bounds["Y"] ?? 0,
-                               width: bounds["Width"] ?? 0,
-                               height: bounds["Height"] ?? 0)
-
+            let frame = NSRect(x: x, y: y, width: width, height: height)
             return (windowNumber, frame)
         }
-
-        return nil
     }
 
     private func convertToScreenCoordinates(_ rect: NSRect) -> NSRect {
@@ -207,13 +175,5 @@ class BlockingManager: ObservableObject {
                       y: screenFrame.height - rect.maxY,
                       width: rect.width,
                       height: rect.height)
-    }
-}
-
-class OverlayWindowDelegate: NSObject, NSWindowDelegate {
-    var onWindowClose: (() -> Void)?
-
-    func windowWillClose(_ notification: Notification) {
-        onWindowClose?()
     }
 }

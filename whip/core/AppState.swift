@@ -4,30 +4,27 @@ import OSLog
 
 @MainActor
 class AppState: ObservableObject {
-    @Published private(set) var timeLimitSettings: TimeLimitSettings
-    @Published private(set) var statisticsManager: StatisticsManager
-    @Published private(set) var blockingManager: BlockingManager
+    @Published private(set) var ruleService: RuleService
+    @Published private(set) var blockingService: BlockingService
     @Published private(set) var usageTracker: UsageTracker
     @Published private(set) var currentApp: AppInfo?
 
     private let logger = Logger(subsystem: "dev.fratta.whip", category: "AppState")
     private var cancellables = Set<AnyCancellable>()
-    
-    private var persistenceManager: PersistenceManaging
+    private let persistenceManager: PersistenceManaging
     private var saveTimer: Timer?
     private let saveInterval: TimeInterval = 30
 
     private var currentDate: Date = Date()
     private var currentDateAsString: String = TimeUtils.currentDateAsString()
 
-    init() {
-        self.persistenceManager = JSONPersistenceManager()
-        self.timeLimitSettings = TimeLimitSettings()
-        self.statisticsManager = StatisticsManager()
-        self.blockingManager = BlockingManager()
+    init(persistenceManager: PersistenceManaging = JSONPersistenceManager()) {
+        self.persistenceManager = persistenceManager
+        self.ruleService = RuleService(persistenceManager: persistenceManager)
+        self.blockingService = BlockingService()
         self.usageTracker = UsageTracker()
 
-        blockingManager.setDependencies(usageTracker: usageTracker, timeLimitSettings: timeLimitSettings)
+        blockingService.setDependencies(usageTracker: usageTracker, ruleService: ruleService)
         setupTimeLimitSettingsObserver()
 
         Task {
@@ -36,55 +33,46 @@ class AppState: ObservableObject {
             setupPeriodicSaving()
         }
     }
-    
+
     private func loadPersistedData() async {
-        switch persistenceManager.loadTimeLimitRules() {
-        case .success(let rules):
-            timeLimitSettings.updateRules(rules)
+        do {
+            let rules = try persistenceManager.loadTimeLimitRules()
+            ruleService.updateRules(rules)
             for (appId, rule) in rules {
-                logger.debug("Loaded rule for \(appId): daily limit = \(rule.dailyLimit ?? 0), schedule = \(rule.schedule?.debugDescription() ?? "none")")
+                logger.debug("Loaded rule for \(appId): daily limit = \(rule.dailyLimit ?? 0), schedule = \(rule.schedule?.toString() ?? "none")")
             }
-        case .failure(let error):
+        } catch {
             logger.error("Failed to load time limit rules: \(error.localizedDescription)")
         }
 
-        switch persistenceManager.loadUsageData() {
-        case .success(let allUsageData):
+        do {
+            let allUsageData = try persistenceManager.loadUsageData()
             let todayUsage = allUsageData[currentDateAsString] ?? [:]
             usageTracker.setInitialUsageData(todayUsage)
             logger.debug("Loaded usage data for \(self.currentDateAsString): \(todayUsage)")
-        case .failure(let error):
+        } catch {
             logger.error("Failed to load usage data: \(error.localizedDescription)")
         }
     }
-    
+
     private func saveTimeLimitRules() {
-        print("Saving time limit rules:")
-        for (appId, rule) in timeLimitSettings.timeLimitRules {
-            print("\(appId): \(rule.debugDescription())")
-        }
-        switch persistenceManager.saveTimeLimitRules(timeLimitSettings.timeLimitRules) {
-        case .success:
+        do {
+            try persistenceManager.saveTimeLimitRules(ruleService.timeLimitRules)
             logger.debug("Successfully saved time limit rules.")
-        case .failure(let error):
+        } catch {
             logger.error("Failed to save time limit rules: \(error.localizedDescription)")
         }
     }
 
     private func saveUsageData() {
-        let todayUsage = usageTracker.getAllUsageData()
-
-        switch persistenceManager.loadUsageData() {
-        case .success(var allUsageData):
+        let todayUsage = usageTracker.usageByApp
+        do {
+            var allUsageData = try persistenceManager.loadUsageData()
             allUsageData[currentDateAsString] = todayUsage
-            switch persistenceManager.saveUsageData(allUsageData) {
-            case .success:
-                logger.debug("Successfully saved usage data")
-            case .failure(let error):
-                logger.error("Failed to save usage data: \(error.localizedDescription)")
-            }
-        case .failure(let error):
-            logger.error("Failed to load existing usage data: \(error.localizedDescription)")
+            try persistenceManager.saveUsageData(allUsageData)
+            logger.debug("Successfully saved usage data")
+        } catch {
+            logger.error("Failed to save usage data: \(error.localizedDescription)")
         }
     }
 
@@ -99,7 +87,7 @@ class AppState: ObservableObject {
     }
     
     private func setupTimeLimitSettingsObserver() {
-        timeLimitSettings.objectWillChange.sink { [weak self] _ in
+        ruleService.objectWillChange.sink { [weak self] _ in
             self?.saveTimeLimitRules()
         }
         .store(in: &cancellables)
@@ -116,7 +104,6 @@ class AppState: ObservableObject {
     }
 
     private func configureUsageTracker() {
-        usageTracker.setStatisticsManager(statisticsManager)
         usageTracker.startTracking()
 
         usageTracker.$currentApp
