@@ -65,6 +65,7 @@
 		AA8CA3502C7BC07600109135 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		AA8CA3532C7BC0A200109135 /* TrackedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackedApp.swift; sourceTree = "<group>"; };
 		AA922C452C80706600526465 /* OverlayContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayContentView.swift; sourceTree = "<group>"; };
+		AAD48ABE2C85AA4A00AEEDD4 /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = TODO.md; path = whip/TODO.md; sourceTree = "<group>"; };
 		AAE3D1722C8323B800D20CB3 /* SettingsFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsFormView.swift; sourceTree = "<group>"; };
 		AAE3D1742C832B8000D20CB3 /* AppSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSelector.swift; sourceTree = "<group>"; };
 		AAEC56222C79383800B753EF /* UsageTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageTracker.swift; sourceTree = "<group>"; };
@@ -86,6 +87,7 @@
 		AA20FAC62C7934C5003A4B47 = {
 			isa = PBXGroup;
 			children = (
+				AAD48ABE2C85AA4A00AEEDD4 /* TODO.md */,
 				AA20FAD12C7934C5003A4B47 /* whip */,
 				AA20FAD02C7934C5003A4B47 /* Products */,
 			);
