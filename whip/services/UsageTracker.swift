@@ -7,25 +7,19 @@ class UsageTracker: ObservableObject {
     @Published private(set) var currentApp: AppInfo?
     @Published private(set) var usageByApp: [String: TimeInterval] = [:]
 
-    let usageUpdated = PassthroughSubject<AppUsageEvent, Never>()
-    var cancellables = Set<AnyCancellable>()
-
+    let usageUpdated = PassthroughSubject<AppUsage, Never>()
+    private var cancellables = Set<AnyCancellable>()
     private let logger = Logger(subsystem: "dev.fratta.whip", category: "UsageTracker")
-
-    private weak var statisticsManager: StatisticsManager?
-
     private var currentRunningApp: NSRunningApplication?
     private var startTime: Date?
     private let updateFrequency: TimeInterval = 1
-    
-    private var excludedAppIds: Set<String> = ["dev.fratta.whip"]
+    private let excludedAppIds: Set<String> = ["dev.fratta.whip"]
 
-    func setStatisticsManager(_ manager: StatisticsManager) {
-        self.statisticsManager = manager
+    init() {
+        setupObservers()
     }
 
     func startTracking() {
-        observeAppChanges()
         startUpdateTimer()
     }
 
@@ -34,21 +28,34 @@ class UsageTracker: ObservableObject {
         updateUsage(app: currentApp)
     }
 
-    private func observeAppChanges() {
+    func getSortedUsageData() -> [AppUsage] {
+        usageByApp.map { (bundleId, timeSpent) in
+            let appInfo = getAppInfo(forBundleIdentifier: bundleId)
+            return AppUsage(appInfo: appInfo, timeSpent: timeSpent, runningApp: nil)
+        }
+        .sorted { $0.timeSpent > $1.timeSpent }
+    }
+
+    func setInitialUsageData(_ data: [String: TimeInterval]) {
+        usageByApp = data.filter { !excludedAppIds.contains($0.key) }
+        logger.debug("Set initial usage data: \(self.usageByApp)")
+    }
+
+    func resetDailyUsage() {
+        usageByApp.removeAll()
+    }
+
+    private func setupObservers() {
         NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didActivateApplicationNotification)
             .compactMap { $0.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication }
-            .sink { [weak self] app in
-                self?.activeAppDidChange(app)
-            }
+            .sink { [weak self] in self?.activeAppDidChange($0) }
             .store(in: &cancellables)
     }
 
     private func startUpdateTimer() {
         Timer.publish(every: updateFrequency, on: .main, in: .common)
             .autoconnect()
-            .sink { [weak self] _ in
-                self?.updateCurrentAppUsage()
-            }
+            .sink { [weak self] _ in self?.updateCurrentAppUsage() }
             .store(in: &cancellables)
     }
 
@@ -59,12 +66,11 @@ class UsageTracker: ObservableObject {
     }
 
     private func activeAppDidChange(_ app: NSRunningApplication) {
-        let newAppInfo = AppInfoManager.shared.getAppInfo(forRunningApplication: app)
+        let newAppInfo = getAppInfo(forRunningApplication: app)
         logger.debug("New frontmost app: \(newAppInfo.displayName)")
 
         updateUsage(app: currentApp)
 
-        // Only update currentApp and start tracking if the new app is not excluded
         if !excludedAppIds.contains(newAppInfo.id) {
             currentApp = newAppInfo
             currentRunningApp = app
@@ -76,6 +82,22 @@ class UsageTracker: ObservableObject {
         }
     }
 
+    private func getAppInfo(forRunningApplication app: NSRunningApplication) -> AppInfo {
+        let bundleIdentifier = app.bundleIdentifier ?? "unknown"
+        let displayName = app.localizedName ?? bundleIdentifier
+        return AppInfo(id: bundleIdentifier, displayName: displayName)
+    }
+
+    private func getAppInfo(forBundleIdentifier bundleId: String) -> AppInfo {
+        if let runningApp = NSWorkspace.shared.runningApplications.first(where: { $0.bundleIdentifier == bundleId }) {
+            return getAppInfo(forRunningApplication: runningApp)
+        } else {
+            // Fallback for apps that are not currently running
+            let displayName = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId)?.lastPathComponent ?? bundleId
+            return AppInfo(id: bundleId, displayName: displayName)
+        }
+    }
+
     private func updateUsage(app: AppInfo?) {
         guard let app = app,
               let start = startTime,
@@ -84,36 +106,10 @@ class UsageTracker: ObservableObject {
 
         let timeSpent = Date().timeIntervalSince(start)
         usageByApp[app.id, default: 0] += timeSpent
-        statisticsManager?.updateUsage(appInfo: app, website: nil, duration: timeSpent)
 
         let totalUsageToday = usageByApp[app.id] ?? 0
-        usageUpdated.send(AppUsageEvent(
-            appId: app.id,
-            runningApp: runningApp,
-            secondsUsedToday: totalUsageToday
-        ))
+        usageUpdated.send(AppUsage(appInfo: app, timeSpent: totalUsageToday, runningApp: runningApp))
 
         objectWillChange.send()
-    }
-
-    func getSortedUsageData() -> [AppUsage] {
-        usageByApp.map {
-            let appInfo = AppInfoManager.shared.getAppInfo(forBundleIdentifier: $0.key)
-            return AppUsage(appInfo: appInfo, timeSpent: $0.value)
-        }
-        .sorted { $0.timeSpent > $1.timeSpent }
-    }
-
-    func getAllUsageData() -> [String: TimeInterval] {
-        return usageByApp
-    }
-
-    func setInitialUsageData(_ data: [String: TimeInterval]) {
-        usageByApp = data.filter { !excludedAppIds.contains($0.key) }
-        logger.debug("Set initial usage data: \(self.usageByApp)")
-    }
-
-    func resetDailyUsage() {
-        usageByApp.removeAll()
     }
 }

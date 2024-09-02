@@ -1,9 +1,9 @@
 import Foundation
 
 protocol PersistenceManaging {
-    func saveTimeLimitRules(_ rules: [String: TimeLimit]) -> Result<Void, Error>
-    func loadTimeLimitRules() -> Result<[String: TimeLimit], Error>
-    
-    func saveUsageData(_ data: [String: [String: TimeInterval]]) -> Result<Void, Error>
-    func loadUsageData() -> Result<[String: [String: TimeInterval]], Error>
+    func saveTimeLimitRules(_ rules: [String: TimeLimit]) throws
+    func loadTimeLimitRules() throws -> [String: TimeLimit]
+
+    func saveUsageData(_ data: [String: [String: TimeInterval]]) throws
+    func loadUsageData() throws -> [String: [String: TimeInterval]]
 }

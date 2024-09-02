@@ -14,62 +14,38 @@ class JSONPersistenceManager: PersistenceManaging {
         usageFileURL = documentsDirectory.appendingPathComponent("usageData.json")
     }
 
-    func saveTimeLimitRules(_ rules: [String: TimeLimit]) -> Result<Void, Error> {
-        do {
-            let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .iso8601
-            let data = try encoder.encode(rules)
-            try data.write(to: rulesFileURL, options: .atomic)
-            print("Saved rules to file: \(String(data: data, encoding: .utf8) ?? "Unable to read data")")
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
+    func saveTimeLimitRules(_ rules: [String: TimeLimit]) throws {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(rules)
+        try data.write(to: rulesFileURL, options: .atomic)
+        logger.debug("Saved rules to file: \(String(data: data, encoding: .utf8) ?? "Unable to read data")")
     }
 
-    func loadTimeLimitRules() -> Result<[String: TimeLimit], Error> {
-        do {
-            guard fileManager.fileExists(atPath: rulesFileURL.path) else {
-                logger.warning("No file found at \(self.rulesFileURL.path). Returning empty ruleset.")
-                return .success([:])
-            }
-            let data = try Data(contentsOf: rulesFileURL)
-            print("Loaded data from file: \(String(data: data, encoding: .utf8) ?? "Unable to read data")")
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .iso8601
-            let rules = try decoder.decode([String: TimeLimit].self, from: data)
-            logger.debug("Loaded time limits: \(rules)")
-            return .success(rules)
-        } catch {
-            logger.error("Could not load rules: \(error.localizedDescription)")
-            return .failure(error)
+    func loadTimeLimitRules() throws -> [String: TimeLimit] {
+        guard fileManager.fileExists(atPath: rulesFileURL.path) else {
+            logger.warning("No file found at \(self.rulesFileURL.path). Returning empty ruleset.")
+            return [:]
         }
+        let data = try Data(contentsOf: rulesFileURL)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let rules = try decoder.decode([String: TimeLimit].self, from: data)
+        logger.debug("Loaded time limits: \(rules)")
+        return rules
     }
 
-    func saveUsageData(_ data: [String: [String: TimeInterval]]) -> Result<Void, Error> {
-        do {
-            let encodedData = try JSONEncoder().encode(data)
-            try encodedData.write(to: usageFileURL, options: .atomic)
-            return .success(())
-        } catch {
-            logger.error("Could nod save usage data: \(error.localizedDescription)")
-            return .failure(error)
-        }
+    func saveUsageData(_ data: [String: [String: TimeInterval]]) throws {
+        let encodedData = try JSONEncoder().encode(data)
+        try encodedData.write(to: usageFileURL, options: .atomic)
     }
 
-    func loadUsageData() -> Result<[String: [String: TimeInterval]], Error> {
-        do {
-            guard fileManager.fileExists(atPath: usageFileURL.path) else {
-                logger.warning("No file found at \(self.usageFileURL.path). Returning empty dataset.")
-                return .success([:])
-            }
-            let data = try Data(contentsOf: usageFileURL)
-            let usageData = try JSONDecoder().decode([String: [String: TimeInterval]].self, from: data)
-            logger.debug("Loaded")
-            return .success(usageData)
-        } catch {
-            logger.error("Could nod load usage data: \(error.localizedDescription)")
-            return .failure(error)
+    func loadUsageData() throws -> [String: [String: TimeInterval]] {
+        guard fileManager.fileExists(atPath: usageFileURL.path) else {
+            logger.warning("No file found at \(self.usageFileURL.path). Returning empty dataset.")
+            return [:]
         }
+        let data = try Data(contentsOf: usageFileURL)
+        return try JSONDecoder().decode([String: [String: TimeInterval]].self, from: data)
     }
 }
