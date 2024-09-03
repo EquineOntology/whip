@@ -24,7 +24,7 @@ struct UsageStatisticsView: View {
     }
 
     private var tableView: some View {
-        List(viewModel.usageData) { usage in
+        List(viewModel.visibleApps) { usage in
             HStack {
                 Text(usage.appInfo.displayName)
                 Spacer()
@@ -34,7 +34,7 @@ struct UsageStatisticsView: View {
     }
 
     private var graphView: some View {
-        Chart(viewModel.usageData) { usage in
+        Chart(viewModel.visibleApps) { usage in
             BarMark(
                 x: .value("App", usage.appInfo.displayName),
                 y: .value("Minutes", usage.timeSpent / 60)
@@ -52,7 +52,7 @@ struct UsageStatisticsView: View {
             }
         }
         .chartYAxis {
-            let maxValue = Int(ceil(viewModel.usageData.map { $0.timeSpent / 60 }.max() ?? 0))
+            let maxValue = Int(ceil(viewModel.visibleApps.map { $0.timeSpent / 60 }.max() ?? 0))
             let step = max(1, maxValue > 4 ? maxValue / 4 : 1)
             AxisMarks(position: .leading, values: .stride(by: Double(step))) { value in
                 AxisGridLine()
@@ -64,8 +64,6 @@ struct UsageStatisticsView: View {
                 }
             }
         }
-        .frame(height: 300)
-        .padding()
-        .animation(.easeInOut, value: viewModel.usageData)
+        .animation(.easeInOut, value: viewModel.visibleApps)
     }
 }

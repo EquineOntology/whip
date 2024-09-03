@@ -5,6 +5,7 @@ import Combine
 class UsageStatisticsViewModel: ObservableObject {
     @Published var viewMode: ViewMode = .table
     @Published var usageData: [AppUsage] = []
+    @Published private(set) var visibleApps: [AppUsage] = []
 
     private let usageTracker: UsageTracker
     private var cancellables = Set<AnyCancellable>()
@@ -36,5 +37,10 @@ class UsageStatisticsViewModel: ObservableObject {
 
     private func updateUsageData() {
         usageData = usageTracker.getSortedUsageData()
+        updateVisibleApps()
+    }
+
+    private func updateVisibleApps() {
+        visibleApps = Array(usageData.prefix(10))
     }
 }
