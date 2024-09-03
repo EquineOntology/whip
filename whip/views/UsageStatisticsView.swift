@@ -6,14 +6,9 @@ struct UsageStatisticsView: View {
     @ObservedObject var viewModel: UsageStatisticsViewModel
 
     var body: some View {
-        VStack {
-            Picker("View Mode", selection: $viewModel.viewMode) {
-                Text("Table").tag(UsageStatisticsViewModel.ViewMode.table)
-                Text("Graph").tag(UsageStatisticsViewModel.ViewMode.graph)
-            }
-            .pickerStyle(SegmentedPickerStyle())
-            .padding()
-            
+        VStack(alignment: .trailing, spacing: 10) {
+            viewModeSelector
+
             if viewModel.viewMode == .table {
                 tableView
             } else {
@@ -21,6 +16,16 @@ struct UsageStatisticsView: View {
             }
         }
         .onAppear(perform: viewModel.setupPeriodicUpdates)
+    }
+
+    private var viewModeSelector: some View {
+        Picker("", selection: $viewModel.viewMode) {
+            Image(systemName: "list.bullet").tag(UsageStatisticsViewModel.ViewMode.table)
+            Image(systemName: "chart.bar").tag(UsageStatisticsViewModel.ViewMode.graph)
+        }
+        .pickerStyle(.segmented)
+        .frame(width: 80)
+        .padding(.bottom, 5)
     }
 
     private var tableView: some View {

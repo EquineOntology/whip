@@ -3,20 +3,26 @@ import Combine
 
 @MainActor
 class UsageStatisticsViewModel: ObservableObject {
-    @Published var viewMode: ViewMode = .table
-    @Published var usageData: [AppUsage] = []
+    @Published var viewMode: ViewMode {
+        didSet {
+            UserDefaults.standard.set(viewMode.rawValue, forKey: "usageStatisticsViewMode")
+        }
+    }
+    @Published private(set) var usageData: [AppUsage] = []
     @Published private(set) var visibleApps: [AppUsage] = []
 
     private let usageTracker: UsageTracker
     private var cancellables = Set<AnyCancellable>()
     private let uiUpdateFrequency: TimeInterval = 1
 
-    enum ViewMode {
+    enum ViewMode: String {
         case table, graph
     }
 
     init(usageTracker: UsageTracker) {
         self.usageTracker = usageTracker
+        let storedViewMode = UserDefaults.standard.string(forKey: "usageStatisticsViewMode") ?? ViewMode.table.rawValue
+        self.viewMode = ViewMode(rawValue: storedViewMode) ?? .table
         setupObservers()
     }
 
