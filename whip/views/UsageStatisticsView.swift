@@ -6,7 +6,7 @@ struct UsageStatisticsView: View {
     @ObservedObject var viewModel: UsageStatisticsViewModel
 
     var body: some View {
-        VStack(alignment: .trailing, spacing: 10) {
+        VStack(alignment: .trailing, spacing: 15) {
             viewModeSelector
 
             if viewModel.viewMode == .table {
@@ -25,7 +25,6 @@ struct UsageStatisticsView: View {
         }
         .pickerStyle(.segmented)
         .frame(width: 80)
-        .padding(.bottom, 5)
     }
 
     private var tableView: some View {
