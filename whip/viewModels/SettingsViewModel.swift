@@ -39,12 +39,8 @@ class SettingsViewModel: ObservableObject {
                 endHour: rule.scheduleEndHour,
                 endMinute: rule.scheduleEndMinute
             )
-            if validateSchedule(appId: selectedApp.id, newSchedule: schedule) {
-                ruleService.setSchedule(for: selectedApp, schedule: schedule)
-                errorMessage = nil
-            } else {
-                errorMessage = "Invalid schedule. Please check for conflicts."
-            }
+            ruleService.setSchedule(for: selectedApp, schedule: schedule)
+            errorMessage = nil
         }
     }
 
@@ -61,6 +57,9 @@ class SettingsViewModel: ObservableObject {
         case .limit:
             if let seconds = TimeUtils.IntervalFromDurationString(rule.timeLimit) {
                 ruleService.setTimeLimit(for: app, seconds: seconds)
+                errorMessage = nil
+            } else {
+                errorMessage = "Invalid time limit format"
             }
         case .schedule:
             let schedule = Schedule(
@@ -69,14 +68,9 @@ class SettingsViewModel: ObservableObject {
                 endHour: rule.scheduleEndHour,
                 endMinute: rule.scheduleEndMinute
             )
-            if validateSchedule(appId: app.id, newSchedule: schedule) {
-                ruleService.setSchedule(for: app, schedule: schedule)
-            } else {
-                errorMessage = "Invalid schedule. Please check for conflicts."
-                return
-            }
+            ruleService.setSchedule(for: app, schedule: schedule)
+            errorMessage = nil
         }
-        errorMessage = nil
     }
 
     func removeRule(for appInfo: AppInfo, type: RuleType) {
@@ -131,16 +125,5 @@ class SettingsViewModel: ObservableObject {
                 self?.forceUpdate.toggle()
             }
             .store(in: &cancellables)
-    }
-
-    private func validateSchedule(appId: String, newSchedule: Schedule) -> Bool {
-        for (id, limit) in ruleService.timeLimitRules {
-            if id != appId, let existingSchedule = limit.schedule {
-                if newSchedule.overlaps(with: existingSchedule) {
-                    return false
-                }
-            }
-        }
-        return true
     }
 }
