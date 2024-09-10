@@ -13,7 +13,7 @@ class UsageTracker: ObservableObject {
     private var currentRunningApp: NSRunningApplication?
     private var startTime: Date?
     private let updateFrequency: TimeInterval = 1
-    private let excludedAppIds: Set<String> = ["dev.fratta.whip"]
+    private let excludedAppIds: Set<String> = ["dev.fratta.whip", "com.apple.loginwindow"]
 
     init() {
         setupObservers()

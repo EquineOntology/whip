@@ -4,6 +4,7 @@ import Charts
 @MainActor
 struct UsageStatisticsView: View {
     @ObservedObject var viewModel: UsageStatisticsViewModel
+    @State private var copiedBundleId: String?
 
     var body: some View {
         VStack(spacing: 15) {
@@ -59,6 +60,20 @@ struct UsageStatisticsView: View {
                 Text(usage.appInfo.displayName)
                 Spacer()
                 Text(TimeUtils.formatTimeInterval(usage.timeSpent))
+                Button(action: {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(usage.appInfo.id, forType: .string)
+                    copiedBundleId = usage.appInfo.id
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        if copiedBundleId == usage.appInfo.id {
+                            copiedBundleId = nil
+                        }
+                    }
+                }) {
+                    Image(systemName: copiedBundleId == usage.appInfo.id ? "checkmark" : "doc.on.doc")
+                }
+                .buttonStyle(.borderless)
+                .frame(width: 20, height: 20)
             }
         }
     }
