@@ -2,27 +2,31 @@ import AppKit
 import Combine
 import OSLog
 
+@MainActor
 class BlockingService: ObservableObject {
     private let logger = Logger(subsystem: "dev.fratta.whip", category: "BlockingService")
     private weak var ruleService: RuleService?
     private weak var usageTracker: UsageTracker?
+    private weak var notificationService: NotificationService?
     private var cancellables = Set<AnyCancellable>()
+    private var isCleanedUp = false
+    private var updateTask: Task<Void, Never>?
+    private var notificationTask: Task<Void, Never>?
 
     private weak var overlayWindow: OverlayWindow?
     private var blockedApp: NSRunningApplication?
     private var workspaceNotificationObserver: Any?
     private var updateTimer: Timer?
     private let windowDelegate = OverlayWindowDelegate()
+    private var upcomingBlockTimes: [String: Date] = [:]
 
-    deinit {
-        cleanupResources()
-    }
-
-    func setDependencies(usageTracker: UsageTracker, ruleService: RuleService) {
+    func setDependencies(usageTracker: UsageTracker, ruleService: RuleService, notificationService: NotificationService) {
         self.usageTracker = usageTracker
         self.ruleService = ruleService
+        self.notificationService = notificationService
         setupEnforcement()
         setupWorkspaceObserver()
+        setupNotifications()
     }
 
     private func setupEnforcement() {
@@ -39,9 +43,75 @@ class BlockingService: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] notification in
+            guard let self = self else { return }
             guard let activatedApp = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else { return }
-            self?.handleAppActivation(activatedApp)
+            let bundleIdentifier = activatedApp.bundleIdentifier ?? ""
+            Task { @MainActor in
+                self.handleAppActivation(bundleIdentifier: bundleIdentifier)
+            }
         }
+    }
+
+    private func handleAppActivation(bundleIdentifier: String) {
+        if bundleIdentifier != blockedApp?.bundleIdentifier {
+            overlayWindow?.orderOut(nil)
+        } else {
+            overlayWindow?.orderFront(nil)
+        }
+    }
+
+    private func setupNotifications() {
+        notificationTask?.cancel()
+        notificationTask = Task {
+            while !Task.isCancelled {
+                checkAndScheduleNotifications()
+                try? await Task.sleep(for: .seconds(60))
+            }
+        }
+    }
+
+    private func checkAndScheduleNotifications() {
+        let currentDate = Date()
+        let currentUsage = usageTracker?.getCurrentDayUsage() ?? [:]
+
+        var upcomingBlocks: [String: Date] = [:]
+
+        for (appId, _) in ruleService?.timeLimitRules ?? [:] {
+            if let nextBlockTime = ruleService?.getUpcomingBlockTimes(for: appId, currentUsage: currentUsage[appId] ?? 0, currentDate: currentDate).first {
+                upcomingBlocks[appId] = nextBlockTime
+            }
+        }
+
+        let newBlockTimes = upcomingBlocks.filter { $0.value != upcomingBlockTimes[$0.key] }
+        upcomingBlockTimes = upcomingBlocks
+
+        notificationService?.cancelAllNotifications()
+
+        let notificationIntervals = [1800.0, 600.0, 60.0] // 30 minutes, 10 minutes, 1 minute
+
+        for (blockTime, apps) in groupNotifications(newBlockTimes) {
+            let appNames = apps.compactMap { usageTracker?.getAppInfo(forBundleIdentifier: $0).displayName }
+            let title = "Upcoming App Limit"
+
+            for interval in notificationIntervals {
+                let notificationDate = blockTime.addingTimeInterval(-interval)
+                if notificationDate > currentDate {
+                    let timeUntilBlock = blockTime.timeIntervalSince(notificationDate)
+                    let body = "\(appNames.joined(separator: ", ")) will be blocked in \(TimeUtils.formatTimeIntervalForNotification(timeUntilBlock))"
+                    notificationService?.scheduleNotification(title: title, body: body, date: notificationDate)
+                }
+            }
+        }
+    }
+
+    private func groupNotifications(_ blockTimes: [String: Date]) -> [Date: [String]] {
+        var grouped: [Date: [String]] = [:]
+
+        for (appId, date) in blockTimes {
+            grouped[date, default: []].append(appId)
+        }
+
+        return grouped
     }
 
     private func handleAppActivation(_ activatedApp: NSRunningApplication) {
@@ -102,10 +172,18 @@ class BlockingService: ObservableObject {
     }
 
     private func startPeriodicUpdates() {
-        updateTimer?.invalidate()
-        updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            self?.updateOverlayPosition()
+        updateTask?.cancel()
+        updateTask = Task { [weak self] in
+            while !Task.isCancelled {
+                self?.updateOverlayPosition()
+                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+            }
         }
+    }
+
+    private func stopPeriodicUpdates() {
+        updateTask?.cancel()
+        updateTask = nil
     }
 
     private func updateOverlayPosition(_ overlay: OverlayWindow, to frame: NSRect) {
@@ -148,6 +226,21 @@ class BlockingService: ObservableObject {
             NSWorkspace.shared.notificationCenter.removeObserver(observer)
         }
         cleanupOverlay()
+        cancellables.removeAll()
+    }
+
+    func cleanup() {
+        guard !isCleanedUp else { return }
+        isCleanedUp = true
+
+        notificationTask?.cancel()
+        if let observer = workspaceNotificationObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(observer)
+        }
+        updateTask?.cancel()
+        overlayWindow?.close()
+        overlayWindow = nil
+        blockedApp = nil
         cancellables.removeAll()
     }
 

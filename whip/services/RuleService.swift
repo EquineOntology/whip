@@ -57,4 +57,36 @@ class RuleService: ObservableObject {
         }
         saveRules()
     }
+
+    func getUpcomingBlockTimes(for appId: String, currentUsage: TimeInterval, currentDate: Date) -> [Date] {
+        guard let rule = timeLimitRules[appId] else { return [] }
+
+        var blockTimes: [Date] = []
+
+        if let dailyLimit = rule.dailyLimit {
+            let remainingTime = dailyLimit - currentUsage
+            if remainingTime > 0 {
+                blockTimes.append(currentDate.addingTimeInterval(remainingTime))
+            }
+        }
+
+        if let schedule = rule.schedule {
+            let calendar = Calendar.current
+            var components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: currentDate)
+            components.hour = schedule.startHour
+            components.minute = schedule.startMinute
+            if let scheduleStart = calendar.date(from: components) {
+                if scheduleStart > currentDate {
+                    blockTimes.append(scheduleStart)
+                } else {
+                    components.day! += 1
+                    if let nextDayStart = calendar.date(from: components) {
+                        blockTimes.append(nextDayStart)
+                    }
+                }
+            }
+        }
+
+        return blockTimes.sorted()
+    }
 }

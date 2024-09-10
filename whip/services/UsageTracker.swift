@@ -92,7 +92,7 @@ class UsageTracker: ObservableObject {
         return AppInfo(id: bundleIdentifier, displayName: displayName)
     }
 
-    private func getAppInfo(forBundleIdentifier bundleId: String) -> AppInfo {
+    func getAppInfo(forBundleIdentifier bundleId: String) -> AppInfo {
         if let runningApp = NSWorkspace.shared.runningApplications.first(where: { $0.bundleIdentifier == bundleId }) {
             return getAppInfo(forRunningApplication: runningApp)
         } else {

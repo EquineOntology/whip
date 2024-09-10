@@ -7,6 +7,7 @@ class AppState: ObservableObject {
     @Published private(set) var ruleService: RuleService
     @Published private(set) var blockingService: BlockingService
     @Published private(set) var usageTracker: UsageTracker
+    @Published private(set) var notificationService: NotificationService
     @Published private(set) var currentApp: AppInfo?
     @Published var loadingError: String?
 
@@ -26,17 +27,19 @@ class AppState: ObservableObject {
         self.persistenceManager = persistenceManager
         self.ruleService = RuleService(persistenceManager: persistenceManager)
         self.historicalUsageService = HistoricalUsageService(persistenceManager: persistenceManager)
+        self.notificationService = NotificationService()
         self.blockingService = BlockingService()
         self.usageTracker = UsageTracker()
         self.appInfoProvider = AppInfoProvider()
 
-        blockingService.setDependencies(usageTracker: usageTracker, ruleService: ruleService)
+        blockingService.setDependencies(usageTracker: usageTracker, ruleService: ruleService, notificationService: notificationService)
         setupTimeLimitSettingsObserver()
 
         Task {
             await loadPersistedData()
             configureUsageTracker()
             setupPeriodicSaving()
+            notificationService.requestAuthorization()
         }
     }
 
@@ -93,7 +96,7 @@ class AppState: ObservableObject {
             }
         }
     }
-    
+
     private func setupTimeLimitSettingsObserver() {
         ruleService.objectWillChange.sink { [weak self] _ in
             self?.saveTimeLimitRules()
@@ -123,5 +126,6 @@ class AppState: ObservableObject {
         saveTimer?.invalidate()
         saveUsageData()
         usageTracker.stopTracking()
+        blockingService.cleanup()
     }
 }

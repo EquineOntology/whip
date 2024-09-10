@@ -50,4 +50,14 @@ enum TimeUtils {
 
         return totalSeconds > 0 ? totalSeconds : nil
     }
+
+    static func formatTimeIntervalForNotification(_ interval: TimeInterval) -> String {
+        let minutes = Int(interval / 60)
+        if minutes < 60 {
+            return "\(minutes) minute\(minutes == 1 ? "" : "s")"
+        } else {
+            let hours = minutes / 60
+            return "\(hours) hour\(hours == 1 ? "" : "s")"
+        }
+    }
 }
