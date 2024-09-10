@@ -52,6 +52,10 @@ struct UsageStatisticsView: View {
     private var tableView: some View {
         List(viewModel.visibleApps) { usage in
             HStack {
+                Image(nsImage: usage.appInfo.icon ?? NSImage())
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 24, height: 24)
                 Text(usage.appInfo.displayName)
                 Spacer()
                 Text(TimeUtils.formatTimeInterval(usage.timeSpent))
