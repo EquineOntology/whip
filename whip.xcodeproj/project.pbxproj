@@ -65,6 +65,7 @@
 		AA490F732C83C825007678F4 /* NSImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSImage.swift; sourceTree = "<group>"; };
 		AA84CE6D2C904D0D004BD89E /* HistoricalUsageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoricalUsageService.swift; sourceTree = "<group>"; };
 		AA84CE6F2C905397004BD89E /* AppInfoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfoProvider.swift; sourceTree = "<group>"; };
+		AA84CE712C9057C2004BD89E /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		AA8CA34B2C7BBA4000109135 /* AppInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfo.swift; sourceTree = "<group>"; };
 		AA8CA3502C7BC07600109135 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		AA8CA3532C7BC0A200109135 /* TrackedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackedApp.swift; sourceTree = "<group>"; };
@@ -91,6 +92,7 @@
 		AA20FAC62C7934C5003A4B47 = {
 			isa = PBXGroup;
 			children = (
+				AA84CE712C9057C2004BD89E /* README.md */,
 				AAD48ABE2C85AA4A00AEEDD4 /* TODO.md */,
 				AA20FAD12C7934C5003A4B47 /* whip */,
 				AA20FAD02C7934C5003A4B47 /* Products */,
