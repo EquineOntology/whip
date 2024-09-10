@@ -12,7 +12,7 @@ struct Main: App {
                 .onAppear {
                     appDelegate.appState = appState
                 }
-                .frame(width: 600, height: 450)
+                .frame(width: 600, height: 470)
                 .fixedSize()
         }
         .windowStyle(HiddenTitleBarWindowStyle())
