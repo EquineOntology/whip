@@ -6,8 +6,16 @@ struct UsageStatisticsView: View {
     @ObservedObject var viewModel: UsageStatisticsViewModel
 
     var body: some View {
-        VStack(alignment: .trailing, spacing: 15) {
-            viewModeSelector
+        VStack(spacing: 15) {
+            HStack {
+                dateNavigationButtons
+                Spacer()
+                viewModeSelector
+            }
+
+            Text(TimeUtils.dateAsString(viewModel.currentVisibleDate))
+                .font(.headline)
+                .frame(maxWidth: .infinity, alignment: .center)
 
             if viewModel.viewMode == .table {
                 tableView
@@ -16,6 +24,20 @@ struct UsageStatisticsView: View {
             }
         }
         .onAppear(perform: viewModel.setupPeriodicUpdates)
+    }
+
+    private var dateNavigationButtons: some View {
+        HStack {
+            Button(action: viewModel.navigateToPreviousDay) {
+                Image(systemName: "chevron.left")
+            }
+            .disabled(!viewModel.canNavigateToPreviousDay)
+
+            Button(action: viewModel.navigateToNextDay) {
+                Image(systemName: "chevron.right")
+            }
+            .disabled(!viewModel.canNavigateToNextDay)
+        }
     }
 
     private var viewModeSelector: some View {

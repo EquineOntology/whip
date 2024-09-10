@@ -16,14 +16,19 @@ class AppState: ObservableObject {
     private var saveTimer: Timer?
     private let saveInterval: TimeInterval = 30
 
+    let historicalUsageService: HistoricalUsageService
     private var currentDate: Date = Date()
-    private var currentDateAsString: String = TimeUtils.currentDateAsString()
+    private var currentDateAsString: String = TimeUtils.dateAsString()
+    
+    let appInfoProvider: AppInfoProvider
 
     init(persistenceManager: PersistenceManaging = JSONPersistenceManager()) {
         self.persistenceManager = persistenceManager
         self.ruleService = RuleService(persistenceManager: persistenceManager)
+        self.historicalUsageService = HistoricalUsageService(persistenceManager: persistenceManager)
         self.blockingService = BlockingService()
         self.usageTracker = UsageTracker()
+        self.appInfoProvider = AppInfoProvider()
 
         blockingService.setDependencies(usageTracker: usageTracker, ruleService: ruleService)
         setupTimeLimitSettingsObserver()
@@ -68,7 +73,7 @@ class AppState: ObservableObject {
     }
 
     private func saveUsageData() {
-        let todayUsage = usageTracker.usageByApp
+        let todayUsage = usageTracker.getCurrentDayUsage()
         do {
             var allUsageData = try persistenceManager.loadUsageData()
             allUsageData[currentDateAsString] = todayUsage
@@ -100,7 +105,7 @@ class AppState: ObservableObject {
         let today = Date()
         if !Calendar.current.isDate(currentDate, inSameDayAs: today) {
             currentDate = today
-            currentDateAsString = TimeUtils.currentDateAsString()
+            currentDateAsString = TimeUtils.dateAsString()
             usageTracker.resetDailyUsage()
             logger.info("Date changed to \(self.currentDateAsString). Reset daily usage.")
         }

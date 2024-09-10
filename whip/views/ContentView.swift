@@ -6,11 +6,17 @@ struct ContentView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            UsageStatisticsView(viewModel: UsageStatisticsViewModel(usageTracker: appState.usageTracker))
-                .tabItem {
-                    Label("Usage", systemImage: "chart.bar")
-                }
-                .tag(0)
+            UsageStatisticsView(
+                viewModel: UsageStatisticsViewModel(
+                    usageTracker: appState.usageTracker,
+                    historicalUsageService: appState.historicalUsageService,
+                    appInfoProvider: appState.appInfoProvider
+                )
+            )
+            .tabItem {
+                Label("Usage", systemImage: "chart.bar")
+            }
+            .tag(0)
 
             SettingsView(viewModel: SettingsViewModel(ruleService: appState.ruleService))
                 .tabItem {

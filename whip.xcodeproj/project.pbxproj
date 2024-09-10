@@ -27,6 +27,8 @@
 		AA490F672C83C224007678F4 /* RuleFormData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA490F662C83C224007678F4 /* RuleFormData.swift */; };
 		AA490F692C83C230007678F4 /* RuleType.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA490F682C83C230007678F4 /* RuleType.swift */; };
 		AA490F742C83C825007678F4 /* NSImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA490F732C83C825007678F4 /* NSImage.swift */; };
+		AA84CE6E2C904D0D004BD89E /* HistoricalUsageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA84CE6D2C904D0D004BD89E /* HistoricalUsageService.swift */; };
+		AA84CE702C905397004BD89E /* AppInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA84CE6F2C905397004BD89E /* AppInfoProvider.swift */; };
 		AA8CA34C2C7BBA4000109135 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8CA34B2C7BBA4000109135 /* AppInfo.swift */; };
 		AA8CA3512C7BC07600109135 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8CA3502C7BC07600109135 /* SettingsView.swift */; };
 		AA8CA3542C7BC0A200109135 /* TrackedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8CA3532C7BC0A200109135 /* TrackedApp.swift */; };
@@ -61,6 +63,8 @@
 		AA490F662C83C224007678F4 /* RuleFormData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleFormData.swift; sourceTree = "<group>"; };
 		AA490F682C83C230007678F4 /* RuleType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleType.swift; sourceTree = "<group>"; };
 		AA490F732C83C825007678F4 /* NSImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSImage.swift; sourceTree = "<group>"; };
+		AA84CE6D2C904D0D004BD89E /* HistoricalUsageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoricalUsageService.swift; sourceTree = "<group>"; };
+		AA84CE6F2C905397004BD89E /* AppInfoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfoProvider.swift; sourceTree = "<group>"; };
 		AA8CA34B2C7BBA4000109135 /* AppInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfo.swift; sourceTree = "<group>"; };
 		AA8CA3502C7BC07600109135 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		AA8CA3532C7BC0A200109135 /* TrackedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackedApp.swift; sourceTree = "<group>"; };
@@ -169,6 +173,8 @@
 				AAEC56242C79389000B753EF /* BlockingService.swift */,
 				AA343D552C7E6C3D007C818F /* RuleService.swift */,
 				AAEC56222C79383800B753EF /* UsageTracker.swift */,
+				AA84CE6D2C904D0D004BD89E /* HistoricalUsageService.swift */,
+				AA84CE6F2C905397004BD89E /* AppInfoProvider.swift */,
 			);
 			path = services;
 			sourceTree = "<group>";
@@ -301,7 +307,9 @@
 				AA343D5B2C7E7195007C818F /* JSONPersistenceManager.swift in Sources */,
 				AA490F592C83BF66007678F4 /* OverlayWindowDelegate.swift in Sources */,
 				AA4726A42C7F1C4D00D1B735 /* OverlayWindow.swift in Sources */,
+				AA84CE702C905397004BD89E /* AppInfoProvider.swift in Sources */,
 				AA8CA3542C7BC0A200109135 /* TrackedApp.swift in Sources */,
+				AA84CE6E2C904D0D004BD89E /* HistoricalUsageService.swift in Sources */,
 				AA24E21A2C79EBFE0027FD24 /* AppState.swift in Sources */,
 				AAF6FF8A2C870B2D00EFCA47 /* RuleFormView.swift in Sources */,
 				AA922C462C80706600526465 /* OverlayContentView.swift in Sources */,

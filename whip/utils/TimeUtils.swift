@@ -9,11 +9,18 @@ enum TimeUtils {
         return String(format: "%dh %02dm %02ds", hours, minutes, seconds)
     }
 
-    static func currentDateAsString() -> String {
+    static func dateAsString(_ date: Date = Date()) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
 
-        return formatter.string(from: Date())
+        return formatter.string(from: date)
+    }
+
+    static func dateFromString(_ input: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+
+        return formatter.date(from: input)
     }
 
     static func IntervalFromDurationString(_ input: String) -> TimeInterval? {

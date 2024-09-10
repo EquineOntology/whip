@@ -48,4 +48,15 @@ class JSONPersistenceManager: PersistenceManaging {
         let data = try Data(contentsOf: usageFileURL)
         return try JSONDecoder().decode([String: [String: TimeInterval]].self, from: data)
     }
+    
+    func loadUsageDataForDate(_ date: Date) throws -> [String: TimeInterval] {
+        let dateString = TimeUtils.dateAsString(date)
+        let allUsageData = try loadUsageData()
+        return allUsageData[dateString] ?? [:]
+    }
+
+    func getAvailableDates() throws -> [Date] {
+        let allUsageData = try loadUsageData()
+        return allUsageData.keys.compactMap { TimeUtils.dateFromString($0) }.sorted()
+    }
 }

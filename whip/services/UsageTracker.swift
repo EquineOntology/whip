@@ -28,6 +28,10 @@ class UsageTracker: ObservableObject {
         updateUsage(app: currentApp)
     }
 
+    func getCurrentDayUsage() -> [String: TimeInterval] {
+        return usageByApp
+    }
+
     func getSortedUsageData() -> [AppUsage] {
         usageByApp.map { (bundleId, timeSpent) in
             let appInfo = getAppInfo(forBundleIdentifier: bundleId)
