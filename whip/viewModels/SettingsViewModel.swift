@@ -18,28 +18,29 @@ class SettingsViewModel: ObservableObject {
         installedApps = fetchInstalledApps()
     }
 
-    func saveNewRule() {
-        guard let selectedApp = newRule.app else {
+    func saveNewRule(_ rule: RuleFormData) {
+        guard let selectedApp = rule.app else {
             errorMessage = "Please select an app"
             return
         }
 
-        switch newRule.ruleType {
+        switch rule.ruleType {
         case .limit:
-            if let seconds = TimeUtils.IntervalFromDurationString(newRule.timeLimit) {
+            if let seconds = TimeUtils.IntervalFromDurationString(rule.timeLimit) {
                 ruleService.setTimeLimit(for: selectedApp, seconds: seconds)
-                showingAddRuleForm = false
-                newRule = RuleFormData()
                 errorMessage = nil
             } else {
                 errorMessage = "Invalid time limit format"
             }
         case .schedule:
-            let schedule = Schedule(start: newRule.startTime, end: newRule.endTime)
+            let schedule = Schedule(
+                startHour: rule.scheduleStartHour,
+                startMinute: rule.scheduleStartMinute,
+                endHour: rule.scheduleEndHour,
+                endMinute: rule.scheduleEndMinute
+            )
             if validateSchedule(appId: selectedApp.id, newSchedule: schedule) {
                 ruleService.setSchedule(for: selectedApp, schedule: schedule)
-                showingAddRuleForm = false
-                newRule = RuleFormData()
                 errorMessage = nil
             } else {
                 errorMessage = "Invalid schedule. Please check for conflicts."
@@ -53,8 +54,8 @@ class SettingsViewModel: ObservableObject {
         }
     }
 
-    func saveEditedRule() {
-        guard let rule = editingRule, let app = rule.app else { return }
+    func saveEditedRule(_ rule: RuleFormData) {
+        guard let app = rule.app else { return }
 
         switch rule.ruleType {
         case .limit:
@@ -62,7 +63,12 @@ class SettingsViewModel: ObservableObject {
                 ruleService.setTimeLimit(for: app, seconds: seconds)
             }
         case .schedule:
-            let schedule = Schedule(start: rule.startTime, end: rule.endTime)
+            let schedule = Schedule(
+                startHour: rule.scheduleStartHour,
+                startMinute: rule.scheduleStartMinute,
+                endHour: rule.scheduleEndHour,
+                endMinute: rule.scheduleEndMinute
+            )
             if validateSchedule(appId: app.id, newSchedule: schedule) {
                 ruleService.setSchedule(for: app, schedule: schedule)
             } else {
@@ -70,7 +76,6 @@ class SettingsViewModel: ObservableObject {
                 return
             }
         }
-        editingRule = nil
         errorMessage = nil
     }
 
@@ -131,7 +136,7 @@ class SettingsViewModel: ObservableObject {
     private func validateSchedule(appId: String, newSchedule: Schedule) -> Bool {
         for (id, limit) in ruleService.timeLimitRules {
             if id != appId, let existingSchedule = limit.schedule {
-                if newSchedule.start < existingSchedule.end && newSchedule.end > existingSchedule.start {
+                if newSchedule.overlaps(with: existingSchedule) {
                     return false
                 }
             }

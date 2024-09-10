@@ -8,6 +8,7 @@ class AppState: ObservableObject {
     @Published private(set) var blockingService: BlockingService
     @Published private(set) var usageTracker: UsageTracker
     @Published private(set) var currentApp: AppInfo?
+    @Published var loadingError: String?
 
     private let logger = Logger(subsystem: "dev.fratta.whip", category: "AppState")
     private var cancellables = Set<AnyCancellable>()
@@ -43,6 +44,7 @@ class AppState: ObservableObject {
             }
         } catch {
             logger.error("Failed to load time limit rules: \(error.localizedDescription)")
+            loadingError = "Failed to load rules: \(error.localizedDescription)"
         }
 
         do {
@@ -52,6 +54,7 @@ class AppState: ObservableObject {
             logger.debug("Loaded usage data for \(self.currentDateAsString): \(todayUsage)")
         } catch {
             logger.error("Failed to load usage data: \(error.localizedDescription)")
+            loadingError = (loadingError ?? "") + "\nFailed to load usage data: \(error.localizedDescription)"
         }
     }
 

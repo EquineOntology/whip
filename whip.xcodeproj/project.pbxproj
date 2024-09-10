@@ -35,7 +35,7 @@
 		AAEC56232C79383800B753EF /* UsageTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEC56222C79383800B753EF /* UsageTracker.swift */; };
 		AAEC56252C79389000B753EF /* BlockingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEC56242C79389000B753EF /* BlockingService.swift */; };
 		AAEC56292C7938D300B753EF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEC56282C7938D300B753EF /* ContentView.swift */; };
-		AAF6FF8A2C870B2D00EFCA47 /* AddRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF6FF892C870B2D00EFCA47 /* AddRuleView.swift */; };
+		AAF6FF8A2C870B2D00EFCA47 /* RuleFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF6FF892C870B2D00EFCA47 /* RuleFormView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -70,7 +70,7 @@
 		AAEC56222C79383800B753EF /* UsageTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageTracker.swift; sourceTree = "<group>"; };
 		AAEC56242C79389000B753EF /* BlockingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingService.swift; sourceTree = "<group>"; };
 		AAEC56282C7938D300B753EF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		AAF6FF892C870B2D00EFCA47 /* AddRuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRuleView.swift; sourceTree = "<group>"; };
+		AAF6FF892C870B2D00EFCA47 /* RuleFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleFormView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -144,7 +144,7 @@
 				AA922C452C80706600526465 /* OverlayContentView.swift */,
 				AA8CA3502C7BC07600109135 /* SettingsView.swift */,
 				AA24E2152C79D65B0027FD24 /* UsageStatisticsView.swift */,
-				AAF6FF892C870B2D00EFCA47 /* AddRuleView.swift */,
+				AAF6FF892C870B2D00EFCA47 /* RuleFormView.swift */,
 			);
 			path = views;
 			sourceTree = "<group>";
@@ -303,7 +303,7 @@
 				AA4726A42C7F1C4D00D1B735 /* OverlayWindow.swift in Sources */,
 				AA8CA3542C7BC0A200109135 /* TrackedApp.swift in Sources */,
 				AA24E21A2C79EBFE0027FD24 /* AppState.swift in Sources */,
-				AAF6FF8A2C870B2D00EFCA47 /* AddRuleView.swift in Sources */,
+				AAF6FF8A2C870B2D00EFCA47 /* RuleFormView.swift in Sources */,
 				AA922C462C80706600526465 /* OverlayContentView.swift in Sources */,
 				AA490F5D2C83C0D1007678F4 /* TimeLimit.swift in Sources */,
 				AAEC56232C79383800B753EF /* UsageTracker.swift in Sources */,
