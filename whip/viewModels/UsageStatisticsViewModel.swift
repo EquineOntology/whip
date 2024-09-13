@@ -17,6 +17,7 @@ class UsageStatisticsViewModel: ObservableObject {
     private let appInfoProvider: AppInfoProvider
     private let historicalUsageService: HistoricalUsageService
     private var cancellables = Set<AnyCancellable>()
+    private var updateSubscription: AnyCancellable?
     private let uiUpdateFrequency: TimeInterval = 1
 
     enum ViewMode: String {
@@ -30,6 +31,14 @@ class UsageStatisticsViewModel: ObservableObject {
         self.historicalUsageService = historicalUsageService
         self.appInfoProvider = appInfoProvider
         self.currentVisibleDate = Date()
+
+        updateSubscription = NotificationCenter.default
+            .publisher(for: NSPopover.willShowNotification)
+            .sink { [weak self] _ in
+                Task { [weak self] in
+                    await self?.updateUsageData()
+                }
+            }
 
         Task {
             await loadAvailableDates()
@@ -48,7 +57,7 @@ class UsageStatisticsViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    private func updateUsageData() async {
+    func updateUsageData() async {
         let data: [String: TimeInterval]
         if Calendar.current.isDateInToday(currentVisibleDate) {
             data = usageTracker.getCurrentDayUsage()

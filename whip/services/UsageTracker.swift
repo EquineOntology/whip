@@ -29,6 +29,7 @@ class UsageTracker: ObservableObject {
     }
 
     func getCurrentDayUsage() -> [String: TimeInterval] {
+        updateCurrentAppUsage()
         return usageByApp
     }
 
@@ -64,9 +65,15 @@ class UsageTracker: ObservableObject {
     }
 
     private func updateCurrentAppUsage() {
-        guard let currentApp = currentApp else { return }
-        updateUsage(app: currentApp)
-        startTime = Date()
+        guard let currentApp = currentApp, let start = startTime else { return }
+        let now = Date()
+        let timeSpent = now.timeIntervalSince(start)
+        usageByApp[currentApp.id, default: 0] += timeSpent
+        startTime = now
+
+        let totalUsageToday = usageByApp[currentApp.id] ?? 0
+        usageUpdated.send(AppUsage(appInfo: currentApp, timeSpent: totalUsageToday, runningApp: currentRunningApp))
+        objectWillChange.send()
     }
 
     private func activeAppDidChange(_ app: NSRunningApplication) {

@@ -33,6 +33,9 @@
 		AA8CA3512C7BC07600109135 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8CA3502C7BC07600109135 /* SettingsView.swift */; };
 		AA8CA3542C7BC0A200109135 /* TrackedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8CA3532C7BC0A200109135 /* TrackedApp.swift */; };
 		AA922C462C80706600526465 /* OverlayContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA922C452C80706600526465 /* OverlayContentView.swift */; };
+		AAB105EC2C94D18200E11E55 /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB105EB2C94D18200E11E55 /* StatusBarController.swift */; };
+		AAB105EF2C94D3D600E11E55 /* EventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB105EE2C94D3D600E11E55 /* EventMonitor.swift */; };
+		AAB105F12C94DCFE00E11E55 /* ImageUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB105F02C94DCFE00E11E55 /* ImageUtils.swift */; };
 		AAE221822C90DC40001AABE0 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE221812C90DC40001AABE0 /* NotificationService.swift */; };
 		AAE3D1752C832B8000D20CB3 /* AppSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE3D1742C832B8000D20CB3 /* AppSelector.swift */; };
 		AAEC56232C79383800B753EF /* UsageTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEC56222C79383800B753EF /* UsageTracker.swift */; };
@@ -71,6 +74,10 @@
 		AA8CA3502C7BC07600109135 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		AA8CA3532C7BC0A200109135 /* TrackedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackedApp.swift; sourceTree = "<group>"; };
 		AA922C452C80706600526465 /* OverlayContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayContentView.swift; sourceTree = "<group>"; };
+		AAB105EB2C94D18200E11E55 /* StatusBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
+		AAB105ED2C94D2B200E11E55 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		AAB105EE2C94D3D600E11E55 /* EventMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventMonitor.swift; sourceTree = "<group>"; };
+		AAB105F02C94DCFE00E11E55 /* ImageUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageUtils.swift; sourceTree = "<group>"; };
 		AAD48ABE2C85AA4A00AEEDD4 /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = TODO.md; path = whip/TODO.md; sourceTree = "<group>"; };
 		AAE221812C90DC40001AABE0 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		AAE3D1742C832B8000D20CB3 /* AppSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSelector.swift; sourceTree = "<group>"; };
@@ -112,6 +119,7 @@
 		AA20FAD12C7934C5003A4B47 /* whip */ = {
 			isa = PBXGroup;
 			children = (
+				AAB105ED2C94D2B200E11E55 /* Info.plist */,
 				AA490F752C83C9E1007678F4 /* viewModels */,
 				AA490F722C83C817007678F4 /* extensions */,
 				AA490F712C83C7BA007678F4 /* utils */,
@@ -180,6 +188,8 @@
 				AA84CE6D2C904D0D004BD89E /* HistoricalUsageService.swift */,
 				AA84CE6F2C905397004BD89E /* AppInfoProvider.swift */,
 				AAE221812C90DC40001AABE0 /* NotificationService.swift */,
+				AAB105EB2C94D18200E11E55 /* StatusBarController.swift */,
+				AAB105EE2C94D3D600E11E55 /* EventMonitor.swift */,
 			);
 			path = services;
 			sourceTree = "<group>";
@@ -208,6 +218,7 @@
 			children = (
 				AA24E2212C7A93250027FD24 /* ColorUtils.swift */,
 				AA24E2172C79EA0A0027FD24 /* TimeUtils.swift */,
+				AAB105F02C94DCFE00E11E55 /* ImageUtils.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -301,6 +312,7 @@
 				AA490F672C83C224007678F4 /* RuleFormData.swift in Sources */,
 				AA343D562C7E6C3D007C818F /* RuleService.swift in Sources */,
 				AA490F5F2C83C0E0007678F4 /* Schedule.swift in Sources */,
+				AAB105EF2C94D3D600E11E55 /* EventMonitor.swift in Sources */,
 				AA490F742C83C825007678F4 /* NSImage.swift in Sources */,
 				AAE3D1752C832B8000D20CB3 /* AppSelector.swift in Sources */,
 				AAEC56292C7938D300B753EF /* ContentView.swift in Sources */,
@@ -315,6 +327,7 @@
 				AA4726A42C7F1C4D00D1B735 /* OverlayWindow.swift in Sources */,
 				AA84CE702C905397004BD89E /* AppInfoProvider.swift in Sources */,
 				AA8CA3542C7BC0A200109135 /* TrackedApp.swift in Sources */,
+				AAB105EC2C94D18200E11E55 /* StatusBarController.swift in Sources */,
 				AA84CE6E2C904D0D004BD89E /* HistoricalUsageService.swift in Sources */,
 				AA24E21A2C79EBFE0027FD24 /* AppState.swift in Sources */,
 				AAF6FF8A2C870B2D00EFCA47 /* RuleFormView.swift in Sources */,
@@ -327,6 +340,7 @@
 				AA24E2222C7A93250027FD24 /* ColorUtils.swift in Sources */,
 				AAEC56252C79389000B753EF /* BlockingService.swift in Sources */,
 				AA8CA3512C7BC07600109135 /* SettingsView.swift in Sources */,
+				AAB105F12C94DCFE00E11E55 /* ImageUtils.swift in Sources */,
 				AA490F5B2C83C028007678F4 /* SettingsViewModel.swift in Sources */,
 				AA490F692C83C230007678F4 /* RuleType.swift in Sources */,
 			);
@@ -467,8 +481,10 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = whip/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Whip;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -497,8 +513,10 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = whip/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Whip;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
