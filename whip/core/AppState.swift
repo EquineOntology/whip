@@ -40,6 +40,7 @@ class AppState: ObservableObject {
             configureUsageTracker()
             setupPeriodicSaving()
             notificationService.requestAuthorization()
+            notificationService.cancelAllNotifications()
         }
     }
 

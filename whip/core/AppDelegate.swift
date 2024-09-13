@@ -5,5 +5,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         appState?.performCleanup()
+        appState?.notificationService.cancelAllNotifications()
     }
 }
